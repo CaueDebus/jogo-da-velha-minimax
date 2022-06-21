@@ -5,25 +5,30 @@
 #include "conio.h" // funções gráficas
 #include <mmsystem.h> // PlaySound(); -> usar nas configs do compilador -lwinmm
 #include "game.h"
+#include <math.h>
+
+int minimax(gameStats * gameStatus, int isMax);
 
 void drawScreen(gameStats * gameStatus)
 {
     // nome dos jogadores
-
     gotoxy(1, 1);
     textcolor(1);
     printf("Jogador 1 (X): ");
     textcolor(7);
     printf("%s\n", gameStatus->ply1);
 
-    gotoxy(1, 2);
-    textcolor(3);
-    printf("Jogador 2 (O): ");
-    textcolor(7);
-    printf("%s\n", gameStatus->ply2);
+    if (gameStatus->gameOp == 1)
+    {
+        gotoxy(1, 2);
+        textcolor(3);
+        printf("Jogador 2 (O): ");
+        textcolor(7);
+        printf("%s\n", gameStatus->ply2);
+    }
+
 
     // tipo do jogo
-
     gotoxy(1, 3);
     textcolor(5);
     printf("Melhor de: ");
@@ -31,7 +36,6 @@ void drawScreen(gameStats * gameStatus)
     printf("%d\n", gameStatus->gameType);
 
     // placar
-
     gotoxy(1, 4);
     textcolor(6);
     printf("Jogador 1 venceu: ");
@@ -45,7 +49,6 @@ void drawScreen(gameStats * gameStatus)
     printf("%d\n", gameStatus->ply2Won);
 
     // jogo da velha
-
     gotoxy(32, 4);
     textcolor(7);
     printf("%c", gameStatus->squares[0][0]);
@@ -83,7 +86,6 @@ void drawScreen(gameStats * gameStatus)
     printf("%c", gameStatus->squares[2][2]);
 
     // linhas horizontais
-
     for(int i = 25; i <= 80; i++)
     {
         gotoxy(i, 8);
@@ -95,7 +97,6 @@ void drawScreen(gameStats * gameStatus)
     }
 
     // linhas verticais
-
     for(int i = 30; i <= 50; i++)
     {
         gotoxy(42, i-28);
@@ -107,29 +108,50 @@ void drawScreen(gameStats * gameStatus)
     }
 }
 
-void getGameType(gameStats* gameStatus)
+void getGameProperties(gameStats* gameStatus)
 {
     FILE* entrada;
 
-    entrada = fopen("entrada.txt", "r");
+    entrada = fopen("entrada.conf", "r");
 
     // se arquivo entrada estiver vazio assumir gameType md3
     if(entrada == NULL)
     {
         gameStatus->gameType = 3;
+        gameStatus->gameOp = 1; // 2v2
     }
 
-    fscanf(entrada, "%d", &gameStatus->gameType);
+    fscanf(entrada, "best-of: %d", &gameStatus->gameType);
+    fscanf(entrada, "\ngame-mode(1- 2x2 / 2- 1vBOT): %d", &gameStatus->gameOp);
 
     fclose(entrada);
+}
+
+void drawGameHistoric(gameStats* gameStatus)
+{
+    FILE* saida;
+
+    saida = fopen("saida.gamehistoric", "a");
+
+    fprintf(saida, "\nJogo de numero: %d\n", gameStatus->currentGame + 1);
+    fprintf(saida, "%c | %c | %c\n", gameStatus->squares[0][0], gameStatus->squares[0][1], gameStatus->squares[0][2]);
+    fprintf(saida, "----------\n");
+    fprintf(saida, "%c | %c | %c\n", gameStatus->squares[1][0], gameStatus->squares[1][1], gameStatus->squares[1][2]);
+    fprintf(saida, "----------\n");
+    fprintf(saida, "%c | %c | %c\n", gameStatus->squares[2][0], gameStatus->squares[2][1], gameStatus->squares[2][2]);
+
+    fclose(saida);
 }
 
 void getPlayersName(gameStats* gameStatus)
 {
     printf("Digite o nome do jogador 1: ");
     scanf("%s", gameStatus->ply1);
-    printf("Digite o nome do jogador 2: ");
-    scanf("%s", gameStatus->ply2);
+    if (gameStatus->gameOp == 1)
+    {
+        printf("Digite o nome do jogador 2: ");
+        scanf("%s", gameStatus->ply2);
+    }
 }
 
 void gameInit(gameStats * gameStatus)
@@ -144,36 +166,45 @@ void gameInit(gameStats * gameStatus)
     {
         for(int j = 0; j < 3; j++)
         {
-            gameStatus->squares[i][j] = ' ';
+            gameStatus->squares[i][j] = 'A';
         }
     }
 }
 
-void verifyWinner(gameStats * gameStatus)
+int verifyWinner(gameStats * gameStatus)
 {
     /*ganha por linha*/
-    if(gameStatus->squares[0][0]=='X' && gameStatus->squares[0][1]=='X' && gameStatus->squares[0][2]=='X'){gameStatus->ply1Won++; gameStatus->winner = 1;}
-    if(gameStatus->squares[1][0]=='X' && gameStatus->squares[1][1]=='X' && gameStatus->squares[1][2]=='X'){gameStatus->ply1Won++; gameStatus->winner = 1;}
-    if(gameStatus->squares[2][0]=='X' && gameStatus->squares[2][1]=='X' && gameStatus->squares[2][2]=='X'){gameStatus->ply1Won++; gameStatus->winner = 1;}
+    if(gameStatus->squares[0][0]=='X' && gameStatus->squares[0][1]=='X' && gameStatus->squares[0][2]=='X'){ return -10; }
+    if(gameStatus->squares[1][0]=='X' && gameStatus->squares[1][1]=='X' && gameStatus->squares[1][2]=='X'){ return -10; }
+    if(gameStatus->squares[2][0]=='X' && gameStatus->squares[2][1]=='X' && gameStatus->squares[2][2]=='X'){ return -10; }
     /*ganha por coluna*/
-    if(gameStatus->squares[0][0]=='X' && gameStatus->squares[1][0]=='X' && gameStatus->squares[2][0]=='X'){gameStatus->ply1Won++; gameStatus->winner = 1;}
-    if(gameStatus->squares[0][1]=='X' && gameStatus->squares[1][1]=='X' && gameStatus->squares[2][1]=='X'){gameStatus->ply1Won++; gameStatus->winner = 1;}
-    if(gameStatus->squares[0][2]=='X' && gameStatus->squares[1][2]=='X' && gameStatus->squares[2][2]=='X'){gameStatus->ply1Won++; gameStatus->winner = 1;}
+    if(gameStatus->squares[0][0]=='X' && gameStatus->squares[1][0]=='X' && gameStatus->squares[2][0]=='X'){ return -10; }
+    if(gameStatus->squares[0][1]=='X' && gameStatus->squares[1][1]=='X' && gameStatus->squares[2][1]=='X'){ return -10; }
+    if(gameStatus->squares[0][2]=='X' && gameStatus->squares[1][2]=='X' && gameStatus->squares[2][2]=='X'){ return -10; }
     /*ganha por diagonal*/
-    if(gameStatus->squares[0][0]=='X' && gameStatus->squares[1][1]=='X' && gameStatus->squares[2][2]=='X'){gameStatus->ply1Won++; gameStatus->winner = 1;}
-    if(gameStatus->squares[0][2]=='X' && gameStatus->squares[1][1]=='X' && gameStatus->squares[2][0]=='X'){gameStatus->ply1Won++; gameStatus->winner = 1;}
+    if(gameStatus->squares[0][0]=='X' && gameStatus->squares[1][1]=='X' && gameStatus->squares[2][2]=='X'){ return -10; }
+    if(gameStatus->squares[0][2]=='X' && gameStatus->squares[1][1]=='X' && gameStatus->squares[2][0]=='X'){ return -10; }
 
     /*ganha por linha*/
-    if(gameStatus->squares[0][0]=='O' && gameStatus->squares[0][1]=='O' && gameStatus->squares[0][2]=='O'){gameStatus->ply2Won++; gameStatus->winner = 1;}
-    if(gameStatus->squares[1][0]=='O' && gameStatus->squares[1][1]=='O' && gameStatus->squares[1][2]=='O'){gameStatus->ply2Won++; gameStatus->winner = 1;}
-    if(gameStatus->squares[2][0]=='O' && gameStatus->squares[2][1]=='O' && gameStatus->squares[2][2]=='O'){gameStatus->ply2Won++; gameStatus->winner = 1;}
+    if(gameStatus->squares[0][0]=='O' && gameStatus->squares[0][1]=='O' && gameStatus->squares[0][2]=='O'){ return 10; }
+    if(gameStatus->squares[1][0]=='O' && gameStatus->squares[1][1]=='O' && gameStatus->squares[1][2]=='O'){ return 10; }
+    if(gameStatus->squares[2][0]=='O' && gameStatus->squares[2][1]=='O' && gameStatus->squares[2][2]=='O'){ return 10; }
     /*ganha por coluna*/
-    if(gameStatus->squares[0][0]=='O' && gameStatus->squares[1][0]=='O' && gameStatus->squares[2][0]=='O'){gameStatus->ply2Won++; gameStatus->winner = 1;}
-    if(gameStatus->squares[0][1]=='O' && gameStatus->squares[1][1]=='O' && gameStatus->squares[2][1]=='O'){gameStatus->ply2Won++; gameStatus->winner = 1;}
-    if(gameStatus->squares[0][2]=='O' && gameStatus->squares[1][2]=='O' && gameStatus->squares[2][2]=='O'){gameStatus->ply2Won++; gameStatus->winner = 1;}
+    if(gameStatus->squares[0][0]=='O' && gameStatus->squares[1][0]=='O' && gameStatus->squares[2][0]=='O'){ return 10; }
+    if(gameStatus->squares[0][1]=='O' && gameStatus->squares[1][1]=='O' && gameStatus->squares[2][1]=='O'){ return 10; }
+    if(gameStatus->squares[0][2]=='O' && gameStatus->squares[1][2]=='O' && gameStatus->squares[2][2]=='O'){ return 10; }
     /*ganha por diagonal*/
-    if(gameStatus->squares[0][0]=='O' && gameStatus->squares[1][1]=='O' && gameStatus->squares[2][2]=='O'){gameStatus->ply2Won++; gameStatus->winner = 1;}
-    if(gameStatus->squares[0][2]=='O' && gameStatus->squares[1][1]=='O' && gameStatus->squares[2][0]=='O'){gameStatus->ply2Won++; gameStatus->winner = 1;}
+    if(gameStatus->squares[0][0]=='O' && gameStatus->squares[1][1]=='O' && gameStatus->squares[2][2]=='O'){ return 10; }
+    if(gameStatus->squares[0][2]=='O' && gameStatus->squares[1][1]=='O' && gameStatus->squares[2][0]=='O'){ return 10; }
+
+    if (gameStatus->playsCounter == 9)
+    {
+        return -5; // estado de retorno velha
+    }
+    else
+    {
+        return 0; // estado de retorno jogo ainda em andamento
+    }
 }
 
 void clearVariables(gameStats * gameStatus)
@@ -203,19 +234,132 @@ void drawWinner(gameStats * gameStatus)
     }
     else if(gameStatus->ply2Won > gameStatus->gameType % 2 || gameStatus->ply2Won > gameStatus->ply1Won)
     {
-        clrscr();
-        gotoxy(45, 15);
-        textcolor(12);
-        printf("JOGADOR %s FOI O VENCEDOR", gameStatus->ply2);
-        PlaySound(TEXT("wow.wav"), NULL, SND_ASYNC);
+        if (gameStatus->gameOp == 2)
+        {
+            clrscr();
+            gotoxy(45, 15);
+            textcolor(12);
+            printf("O BOT FOI O VENCEDOR");
+            PlaySound(TEXT("wow.wav"), NULL, SND_ASYNC);
+        }
+        else
+        {
+            clrscr();
+            gotoxy(45, 15);
+            textcolor(12);
+            printf("JOGADOR %s FOI O VENCEDOR", gameStatus->ply2);
+            PlaySound(TEXT("wow.wav"), NULL, SND_ASYNC);
+        }
     }
     else
     {
         clrscr();
         gotoxy(45, 15);
         textcolor(12);
-        printf("DEU VELHA");
+        printf("O JOGO EMPATOU");
         PlaySound(TEXT("empate.wav"), NULL, SND_ASYNC);
+    }
+}
+
+void drawEndGame()
+{
+    const char* legenda[] = { "Muito ", "obrigado ", "por ", "jogar ", "jogo ", "da ", "velha ", "feito ", "por ", "Caue ", "Felipe ", "Knies ", "Debus ", "e ", "Eduardo ", "Henrique ", "Joner ", "Lemos" };
+
+    clrscr();
+    PlaySound(TEXT("fim.wav"), NULL, SND_ASYNC);
+    gotoxy(5, 5);
+    textcolor(7);
+    for (int i = 0; i < 18; i++)
+    {
+        printf("%s", legenda[i]);
+        Sleep(450);
+    }
+}
+
+// https://www.youtube.com/watch?v=cwzKjFkSyIE
+// o processo de todas as formas onde O ganha retorna 1 e onde X ganha retorna -1
+// no caso de velha minimax retorna -5
+// jogo ainda em andamento a função minimax continua a recursao
+
+// o bot prefere nao perder doque ganhar
+// ele funciona apenas se a primeira casa marcada e na linha 3 e coluna 3
+
+void bot(gameStats * gameStatus)
+{
+    int i, j, index_x, index_y;
+    double pt;
+    double bpt = -INFINITY;
+    for (i = 0; i < 3; i++)
+    {
+        for (j = 0; j < 3; j++)
+        {
+            if (gameStatus->squares[i][j] == ' ')
+            {
+                gameStatus->squares[i][j] = 'O';
+                pt = minimax(gameStatus, 0);
+                gameStatus->squares[i][j] = ' ';
+                if (pt > bpt)
+                {
+                    bpt = pt;
+                    index_x = i;
+                    index_y = j;
+                }
+            }
+        }
+    }
+    gameStatus->squares[index_x][index_y] = 'O';
+}
+
+int minimax(gameStats * gameStatus, int isMax)
+{
+    int score, i, j;
+    double pt;
+    score = verifyWinner(gameStatus);
+    if (score != 0)
+    {
+        return score;
+    }
+    if (isMax) // maximo
+    {
+        double bpt = -INFINITY;
+        for (i = 0; i < 3; i++)
+        {
+            for (j = 0; j < 3; j++)
+            {
+                if (gameStatus->squares[i][j] == ' ')
+                {
+                    gameStatus->squares[i][j] = 'O';
+                    pt = minimax(gameStatus, 0);
+                    gameStatus->squares[i][j] = ' ';
+                    if (pt > bpt)
+                    {
+                        bpt = pt;
+                    }
+                }
+            }
+        }
+        return bpt;
+    }
+    else // minimo
+    {
+        double bpt = INFINITY;
+        for (i = 0; i < 3; i++)
+        {
+            for (j = 0; j < 3; j++)
+            {
+                if (gameStatus->squares[i][j] == ' ')
+                {
+                    gameStatus->squares[i][j] = 'X';
+                    pt = minimax(gameStatus, 1);
+                    gameStatus->squares[i][j] = ' ';
+                    if (pt < bpt)
+                    {
+                        bpt = pt;
+                    }
+                }
+            }
+        }
+        return bpt;
     }
 }
 
@@ -223,21 +367,21 @@ int main()
 {
     gameStats gameStatus;
 
-    const char *legenda[] = {"Muito ", "obrigado ", "por ", "jogar ", "jogo ", "da ", "velha ", "feito ", "por ", "Caue ", "Felipe ", "Knies ", "Debus ", "e ", "Eduardo ", "Henrique ", "Joner ", "Lemos"};
-
     gameInit(&gameStatus);
-    getGameType(&gameStatus);
+    getGameProperties(&gameStatus);
     getPlayersName(&gameStatus);
 
     for(int i = 0; i < gameStatus.gameType; i++)
     {
-        gameStatus.winner = 0;
-        while(gameStatus.winner == 0)
+        gameStatus.currentGame = i;
+        gameStatus.haveWinner = 0;
+        clearVariables(&gameStatus);
+        while(gameStatus.haveWinner == 0)
         {
             clrscr();
             drawScreen(&gameStatus);
 
-            if(gameStatus.playsCounter % 2 == 0)
+            if(gameStatus.playsCounter % 2 == 0) // jogadas pares = plyr 1
             {
                 gameStatus.plyr = 1;
             }
@@ -253,28 +397,55 @@ int main()
             }
             else
             {
-                printf("Vez de jogador %s\n", gameStatus.ply2);
+                if (gameStatus.gameOp == 2)
+                {
+                    printf("Vez de jogador BOT\n");
+                }
+                else
+                {
+                    printf("Vez de jogador %s\n", gameStatus.ply2);
+                }
             }
-            gotoxy(1, 41);
-            printf("Digite a linha: ");
-            scanf("%d", &gameStatus.rows);
-            gotoxy(1, 42);
-            printf("Digite a coluna: ");
-            scanf("%d", &gameStatus.cols);
+
+            if (gameStatus.gameOp == 2 && gameStatus.plyr == 2)
+            {
+                bot(&gameStatus);
+                gameStatus.playsCounter++;
+            }
+            else if (gameStatus.gameOp == 2 && gameStatus.plyr == 1)
+            {
+                gotoxy(1, 41);
+                printf("Digite a linha: ");
+                scanf("%d", &gameStatus.rows);
+
+                gotoxy(1, 42);
+                printf("Digite a coluna: ");
+                scanf("%d", &gameStatus.cols);
+            }
+
+            if (gameStatus.gameOp == 1)
+            {
+                gotoxy(1, 41);
+                printf("Digite a linha: ");
+                scanf("%d", &gameStatus.rows);
+
+                gotoxy(1, 42);
+                printf("Digite a coluna: ");
+                scanf("%d", &gameStatus.cols);
+            }
 
             // verifica se valores são validos
-
-            if(gameStatus.rows < 1 || gameStatus.cols < 1 || gameStatus.rows > 3 || gameStatus.cols > 3)
+            if(gameStatus.rows < 1 || gameStatus.cols < 1 || gameStatus.rows > 3 || gameStatus.cols > 3) // casas que nao existem
             {
                 gameStatus.rows = 0;
                 gameStatus.cols = 0;
             }
-            else if(gameStatus.squares[gameStatus.rows -1][gameStatus.cols -1] != ' ')
+            else if(gameStatus.squares[gameStatus.rows -1][gameStatus.cols -1] != ' ') // casas ja ocupadas
             {
                 gameStatus.rows = 0;
                 gameStatus.cols = 0;
             }
-            else
+            else // casas válidas
             {
                 if(gameStatus.plyr == 1)
                 {
@@ -282,37 +453,38 @@ int main()
                 }
                 else
                 {
-                    gameStatus.squares[gameStatus.rows -1][gameStatus.cols -1] = 'O';
+                    if (gameStatus.gameOp != 2)
+                    {
+                        gameStatus.squares[gameStatus.rows - 1][gameStatus.cols - 1] = 'O';
+                    }
                 }
                 gameStatus.playsCounter++;
             }
 
             // verifica se alguem ganhou
-            verifyWinner(&gameStatus);
-
-            // verifica se deu velha
-            if(gameStatus.playsCounter == 9)
+            int check = verifyWinner(&gameStatus);
+            if (check == 10) // O ganha
             {
-                gameStatus.winner = 1;
+                gameStatus.ply2Won++;
+                gameStatus.haveWinner = 1;
+                drawGameHistoric(&gameStatus);
             }
-
-            if(gameStatus.winner == 1)
+            else if (check == -10) // X ganha
             {
-                clearVariables(&gameStatus);
+                gameStatus.ply1Won++;
+                gameStatus.haveWinner = 1;
+                drawGameHistoric(&gameStatus);
+            }
+            else if (check == -5) // velha
+            {
+                gameStatus.haveWinner = 1;
+                drawGameHistoric(&gameStatus);
             }
         }
     }
     drawWinner(&gameStatus);
     getch();
-    clrscr();
-    PlaySound(TEXT("fim.wav"), NULL, SND_ASYNC);
-    gotoxy(5, 5);
-    textcolor(7);
-    for(int i = 0; i<18; i++)
-    {
-        printf("%s", legenda[i]);
-        Sleep(450);
-    }
+    drawEndGame();
     getch();
 
     return 0;

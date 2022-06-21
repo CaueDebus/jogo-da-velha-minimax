@@ -10,10 +10,12 @@ typedef struct game{
     unsigned int ply2Won;
     char ply1[MAX_NAME_LEN];
     char ply2[MAX_NAME_LEN];
-    unsigned int winner;
+    int haveWinner;
     unsigned int plyr;
     unsigned int playsCounter;
     unsigned int rows;
     unsigned int cols;
+    unsigned int gameOp;
+    unsigned int currentGame;
     char squares[SQUARES_NUM][SQUARES_NUM];
 } gameStats;
