@@ -1,147 +1,87 @@
 
-Jogo de numero: 1
-O | X |  
-----------
-O | X | X
-----------
-O |   |  
+id do jogo: #41
 
-Jogo de numero: 2
-O |   | X
-----------
-X | O | X
-----------
-  |   | O
+   Jogo de numero: 1
+      X | X | O
+      ----------
+      X | O |  
+      ----------
+      O |   |  
 
-Jogo de numero: 3
-X | O | O
-----------
-X | X | O
-----------
-  | X | O
+   Jogo de numero: 2
+      X | O |  
+      ----------
+      X | O |  
+      ----------
+        | O | X
 
-Jogo de numero: 1
-O | O | X
-----------
-O | X |  
-----------
-X |   | X
+   Jogo de numero: 3
+      X | O |  
+      ----------
+        | O | X
+      ----------
+        | O | X
 
-Jogo de numero: 1
-O |   | X
-----------
-X | O | X
-----------
-  |   | O
+id do jogo: #41
 
-Jogo de numero: 1
-O |   | X
-----------
-O | X |  
-----------
-O |   | X
+   Jogo de numero: 1
+      X | X | O
+      ----------
+      X | O |  
+      ----------
+      O |   |  
 
-Jogo de numero: 1
-X |   |  
-----------
-  |   |  
-----------
-  |   |  
+   Jogo de numero: 2
+      X | O |  
+      ----------
+      X | O | X
+      ----------
+        | O |  
 
-Jogo de numero: 2
-X |   |  
-----------
-  |   |  
-----------
-  |   |  
+   Jogo de numero: 3
+      O | X | X
+      ----------
+      O | X | X
+      ----------
+      O | O |  
 
-Jogo de numero: 3
-X |   |  
-----------
-  |   |  
-----------
-  |   |  
+id do jogo: #41
 
-Jogo de numero: 1
-  |   |  
-----------
-  | X |  
-----------
-  |   |  
+   Jogo de numero: 1
+      X | X | O
+      ----------
+      X | O |  
+      ----------
+      O |   |  
 
-Jogo de numero: 1
-  |   |  
-----------
-  | X |  
-----------
-  |   |  
+   Jogo de numero: 2
+      X | O |  
+      ----------
+      X | O |  
+      ----------
+        | O | X
 
-Jogo de numero: 2
-  |   |  
-----------
-  |   |  
-----------
-  |   | X
+   Jogo de numero: 3
+      X | X | O
+      ----------
+      X | O |  
+      ----------
+      O |   |  
 
-Jogo de numero: 3
-X |   |  
-----------
-  |   |  
-----------
-  |   |  
+id do jogo: #41
 
-Jogo de numero: 1
-X | O | X
-----------
-X | O |  
-----------
-  | O |  
+   Jogo de numero: 1
+      X | O |  
+      ----------
+      X | O |  
+      ----------
+      X |   |  
 
-Jogo de numero: 1
-X | X | O
-----------
-X | O |  
-----------
-O |   |  
+id do jogo: #41
 
-Jogo de numero: 2
-X | O | X
-----------
-X | O | O
-----------
-O | X | X
-
-Jogo de numero: 3
-X | O | X
-----------
-X | O |  
-----------
-  | O |  
-
-Jogo de numero: 1
-X | X | O
-----------
-X | O |  
-----------
-O |   |  
-
-Jogo de numero: 1
-X |   | O
-----------
-X | O |  
-----------
-O |   | X
-
-Jogo de numero: 2
-X |   | O
-----------
-X | O | X
-----------
-O |   |  
-
-Jogo de numero: 1
-O | X | O
-----------
-X | X | O
-----------
-X |   | O
+   Jogo de numero: 1
+      X | O |  
+      ----------
+      X | O |  
+      ----------
+      X |   |  
