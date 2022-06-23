@@ -111,10 +111,10 @@ void stdCfgFile()
 {
     FILE* entrada;
 
-    entrada = fopen("/config/entrada.conf", "w");
+    entrada = fopen("./config/entrada.conf", "w");
 
     fprintf(entrada, "best-of: 3");
-    fprintf(entrada, "\ngame-mode(1- 2x2 / 2- 1vBOT): 1");
+    fprintf(entrada, "\ngame-mode(1- 1x1 / 2- 1vBOT): 1");
 
     fclose(entrada);
 }
@@ -123,7 +123,7 @@ void getGameProperties(gameStats* gameStatus)
 {
     FILE* entrada;
 
-    entrada = fopen("/config/entrada.conf", "r");
+    entrada = fopen("./config/entrada.conf", "r");
 
     if(entrada == NULL)
     {
@@ -131,7 +131,18 @@ void getGameProperties(gameStats* gameStatus)
     }
 
     fscanf(entrada, "best-of: %d", &gameStatus->gameType);
-    fscanf(entrada, "\ngame-mode(1- 2x2 / 2- 1vBOT): %d", &gameStatus->gameOp);
+
+    if (gameStatus->gameType > 7) // max gameType == 7
+    {
+        gameStatus->gameType = 3;
+    }
+
+    fscanf(entrada, "\ngame-mode(1- 1x1 / 2- 1vBOT): %d", &gameStatus->gameOp);
+
+    if (gameStatus->gameOp != 1 && gameStatus->gameOp != 2) // in case gameOp == inst 1 or 2 set gameOp to 1
+    {
+        gameStatus->gameOp = 1;
+    }
 
     fclose(entrada);
 }
@@ -140,7 +151,7 @@ void drawGameId()
 {
     FILE* saida;
 
-    saida = fopen("/gamehistory/saida.gamehistory", "a"); // using append to save other games history at the same file
+    saida = fopen("./gamehistory/saida.gamehistory", "a"); // using append to save other games history at the same file
 
     int idNum = rand() % 1000000000;
 
@@ -153,7 +164,7 @@ void drawGameHistory(gameStats* gameStatus)
 {
     FILE* saida;
 
-    saida = fopen("/gamehistory/saida.gamehistory", "a"); // using append to save other games history at the same file
+    saida = fopen("./gamehistory/saida.gamehistory", "a"); // using append to save other games history at the same file
 
     fprintf(saida, "\n     Jogo de numero: %d\n", gameStatus->currentGame + 1);
     fprintf(saida, "      %c | %c | %c\n      ----------\n      %c | %c | %c\n      ----------\n      %c | %c | %c\n", gameStatus->board[0][0], gameStatus->board[0][1], gameStatus->board[0][2], gameStatus->board[1][0], gameStatus->board[1][1], gameStatus->board[1][2], gameStatus->board[2][0], gameStatus->board[2][1], gameStatus->board[2][2]);
@@ -259,7 +270,7 @@ void drawWinner(gameStats * gameStatus) // check the "best of X" winner
         gotoxy(45, 15);
         textcolor(12);
         printf("JOGADOR %s FOI O VENCEDOR", gameStatus->ply1);
-        PlaySound(TEXT("/sounds/wow.wav"), NULL, SND_ASYNC);
+        PlaySound(TEXT("./sounds/wow.wav"), NULL, SND_ASYNC);
     }
     else if(gameStatus->ply2Won > gameStatus->gameType % 2 || gameStatus->ply2Won > gameStatus->ply1Won)
     {
@@ -269,7 +280,7 @@ void drawWinner(gameStats * gameStatus) // check the "best of X" winner
             gotoxy(45, 15);
             textcolor(12);
             printf("O BOT FOI O VENCEDOR");
-            PlaySound(TEXT("/sounds/wow.wav"), NULL, SND_ASYNC);
+            PlaySound(TEXT("./sounds/wow.wav"), NULL, SND_ASYNC);
         }
         else
         {
@@ -277,7 +288,7 @@ void drawWinner(gameStats * gameStatus) // check the "best of X" winner
             gotoxy(45, 15);
             textcolor(12);
             printf("JOGADOR %s FOI O VENCEDOR", gameStatus->ply2);
-            PlaySound(TEXT("/sounds/wow.wav"), NULL, SND_ASYNC);
+            PlaySound(TEXT("./sounds/wow.wav"), NULL, SND_ASYNC);
         }
     }
     else
@@ -286,7 +297,7 @@ void drawWinner(gameStats * gameStatus) // check the "best of X" winner
         gotoxy(45, 15);
         textcolor(12);
         printf("O JOGO EMPATOU");
-        PlaySound(TEXT("/sounds/empate.wav"), NULL, SND_ASYNC);
+        PlaySound(TEXT("./sounds/empate.wav"), NULL, SND_ASYNC);
     }
 }
 
@@ -295,7 +306,7 @@ void drawEndGame()
     const char* legenda[] = { "Muito ", "obrigado ", "por ", "jogar ", "jogo ", "da ", "velha ", "feito ", "por ", "Caue ", "Felipe ", "Knies ", "Debus ", "e ", "Eduardo ", "Henrique ", "Joner ", "Lemos" };
 
     clrscr();
-    PlaySound(TEXT("/sounds/fim.wav"), NULL, SND_ASYNC);
+    PlaySound(TEXT("./sounds/fim.wav"), NULL, SND_ASYNC);
     gotoxy(5, 5);
     textcolor(7);
     for (int i = 0; i < 18; i++)
